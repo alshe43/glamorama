@@ -892,7 +892,7 @@ function setRole(rid, f, v, re){
   r[f] = v; touch(); if (re) { renderApp(); renderLayer(); }
 }
 function classCounts(p){
-  const s = pStats(p), main = S.cycles.filter(c => c.results[p.id] === 'main').length;
+  const s = pStats(p), main = s.main;
   const it = (k, l, v) => '<div class="cc-i"><span class="cc-sw hc k-' + k + '"></span><span class="cc-v">' + v + '</span><span class="cc-l">' + l + '</span></div>';
   return '<section class="sec"><h3>Классы на конкурсах</h3><div class="ccrow">' + it('glam', 'Glamorama', s.glam) + it('gold', 'Золотая молодёжь', s.gold) + it('main', 'Мейнстрим', main) + it('anti', 'Анти-Вайб', s.anti) + it('flop', 'Flop', s.flop) + '</div></section>';
 }
@@ -944,10 +944,10 @@ function rolesHTML(){
 let dangerSort = 'nom';
 const REL = {ally:'Союзник', neutral:'Нейтрально', hostile:'Обижен(а)'};
 function pStats(p){
-  let nom = 0, votes = 0, survived = 0, saved = 0, glam = 0, gold = 0, anti = 0, flop = 0;
+  let nom = 0, votes = 0, survived = 0, saved = 0, glam = 0, gold = 0, main = 0, anti = 0, flop = 0;
   S.cycles.forEach(c => {
     const r = c.results[p.id];
-    if (r === 'glam') glam++; if (r === 'gold') gold++; if (r === 'anti') anti++; if (r === 'flop') flop++;
+    if (r === 'glam') glam++; if (r === 'gold') gold++; if (r === 'main') main++; if (r === 'anti') anti++; if (r === 'flop') flop++;
     const isNom = r === 'anti' || r === 'flop' || (c.twist && (c.twist.votes || {})[p.id] != null);
     if (isNom) { nom++; if (c.out !== p.id && !(c.twist && c.twist.out === p.id)) survived++; }
     if (c.votes && c.votes[p.id] != null) votes += +c.votes[p.id] || 0;
@@ -955,7 +955,7 @@ function pStats(p){
     if (c.twist && (c.twist.votes || {})[p.id] != null) votes += +c.twist.votes[p.id] || 0;
     if (c.saved === p.id) saved++;
   });
-  return {nom, votes, survived, saved, glam, gold, anti, flop};
+  return {nom, votes, survived, saved, glam, gold, main, anti, flop};
 }
 function heatHTML(){
   const cs = cyclesAsc();
@@ -972,7 +972,7 @@ function heatHTML(){
   return '<section class="panel span2"><h2>Тепловая карта классов</h2>' + leg + '<div class="tbl-wrap heat-wrap"><table class="heat">' + head + rows + '</table></div></section>';
 }
 function dangerHTML(){
-  const cols = [['nom','Номинаций'],['votes','Голосов против'],['survived','Выжил(а)'],['saved','Спасали'],['glam','Glamorama'],['gold','Зол. молодёжь'],['anti','Анти-Вайб'],['flop','Flop']];
+  const cols = [['nom','Номинаций'],['votes','Голосов против'],['survived','Выжил(а)'],['saved','Спасали'],['glam','Glamorama'],['gold','Зол. молодёжь'],['main','Мейнстрим'],['anti','Анти-Вайб'],['flop','Flop']];
   const ps = S.players.filter(p => p.status === 'in' || !hideLeft).map(p => ({p, s:pStats(p)}));
   ps.sort((a, b) => b.s[dangerSort] - a.s[dangerSort] || byName(a.p, b.p));
   const head = '<tr><th>Игрок</th>' + cols.map(([k, l]) => '<th aria-sort="' + (dangerSort === k ? 'descending' : 'none') + '"><button class="thb' + (dangerSort === k ? ' on' : '') + '" onclick="dangerSort=\'' + k + '\';renderApp()">' + l + '<span class="sa">' + (dangerSort === k ? '▼' : '↕') + '</span></button></th>').join('') + '</tr>';
